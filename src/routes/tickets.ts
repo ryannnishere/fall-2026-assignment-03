@@ -7,19 +7,10 @@ import {
   updateTicketStatus,
 } from '../dal/tickets.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { insertTimeLog, getTotalHoursForTicket } from '../dal/timeLogs.js';
+
 const router = Router();
-/*
-### 3. Ticket Routes (`src/routes/tickets.ts`)
 
-Implement the ticket endpoints with strict payload validation:
-
-- `GET /tickets`: Return all tickets. Must support query parameters for pagination (`?limit=10&offset=0`) and filtering (`?status=TODO`).
-- `GET /tickets/:id`: Return a single ticket. Return `404 Not Found` if undefined.
-- `POST /tickets`: Create a new ticket. Extract the `creator_id` from the `X-User-Id` header (via your middleware) and the `title`/`description` from the body. Return `201 Created`.
-- `PATCH /tickets/:id/status`: Update a ticket's status. Return `200 OK`.
-*/
-
-// TODO: Student implementation - Part 1: Ticket Routes
 // GET /tickets
 router.get('/', async (req, res) => {
   const options: GetAllTicketsOptions = {};
@@ -72,8 +63,21 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
   res.status(200).json(updated);
 });
 
-// TODO: Student implementation - Part 2: Time Log Routes
 // POST /tickets/:id/time
+router.post('/:id/time', authMiddleware, async (req, res) => {
+  const ticketId = Number(req.params.id);
+  const userId = res.locals.userId;
+  const { hours } = req.body;
+
+  const log = await insertTimeLog(ticketId, userId, hours);
+  res.status(201).json(log);
+});
+
 // GET /tickets/:id/time
+router.get('/:id/time', async (req, res) => {
+  const ticketId = Number(req.params.id);
+  const totalHours = await getTotalHoursForTicket(ticketId);
+  res.json({ ticket_id: ticketId, total_hours: totalHours });
+});
 
 export default router;
