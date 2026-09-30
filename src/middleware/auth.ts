@@ -12,7 +12,6 @@ export function authMiddleware(
   res: Response,
   next: NextFunction,
 ): void {
-  // TODO: Student implementation - Part 1: Authentication Middleware
   const rawUserId = req.header('X-User-Id');
   if (!rawUserId || !/^\d+$/.test(rawUserId)) {
     res
